@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MeshScript Viewer</title>
+<script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #141414;
+  color: #ddd;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 16px;
+  height: 42px;
+  background: #0d0d0d;
+  border-bottom: 1px solid #2a2a2a;
+  flex-shrink: 0;
+}
+.logo { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; color: #555; text-transform: uppercase; }
+.divider { width: 1px; height: 18px; background: #2a2a2a; }
+#scriptName { font-size: 13px; color: #ccc; }
+.kbd {
+  margin-left: auto;
+  font-size: 10px;
+  color: #444;
+}
+.kbd kbd {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 3px;
+  padding: 1px 5px;
+  color: #666;
+  font-family: inherit;
+}
+
+/* ── Main layout ── */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Step sidebar ── */
+.sidebar {
+  width: 210px;
+  flex-shrink: 0;
+  background: #0d0d0d;
+  border-right: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.sidebar-header {
+  padding: 8px 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #444;
+  border-bottom: 1px solid #1e1e1e;
+  flex-shrink: 0;
+}
+.steps { flex: 1; overflow-y: auto; }
+.steps::-webkit-scrollbar { width: 4px; }
+.steps::-webkit-scrollbar-track { background: transparent; }
+.steps::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+.step-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #191919;
+  border-left: 3px solid transparent;
+  transition: background 0.1s, border-color 0.1s;
+}
+.step-item:hover { background: #181818; }
+.step-item.active {
+  background: #111d2e;
+  border-left-color: #3b82f6;
+}
+.step-num { font-size: 10px; color: #444; margin-bottom: 2px; }
+.step-label { font-size: 12px; font-weight: 500; color: #e0e0e0; }
+.step-meta { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 4px; }
+.badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+.badge-ok  { background: #0f291a; color: #4ade80; }
+.badge-warn { background: #2a1a0a; color: #fb923c; }
+.badge-stat { background: #1e1e1e; color: #888; }
+
+/* ── Center: viewer + bottom bar ── */
+.viewer-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+model-viewer {
+  flex: 1;
+  width: 100%;
+  background: #1a1a1a;
+  --progress-bar-color: #3b82f6;
+  --progress-bar-height: 2px;
+}
+
+.bottom-bar {
+  height: 46px;
+  flex-shrink: 0;
+  background: #0d0d0d;
+  border-top: 1px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+}
+.nav-btn {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  color: #bbb;
+  padding: 5px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background 0.1s;
+}
+.nav-btn:hover:not(:disabled) { background: #2a2a2a; color: #fff; }
+.nav-btn:disabled { opacity: 0.25; cursor: default; }
+.step-counter { font-size: 11px; color: #555; min-width: 70px; text-align: center; }
+.stats-row { display: flex; gap: 18px; margin-left: 6px; }
+.stat-item { font-size: 11px; color: #555; }
+.stat-item span { color: #aaa; }
+#statWater { margin-left: 4px; }
+
+/* ── Code panel ── */
+.code-panel {
+  width: 300px;
+  flex-shrink: 0;
+  background: #0d0d0d;
+  border-left: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: width 0.2s ease;
+}
+.code-panel.collapsed { width: 0; border-left: none; }
+.code-header {
+  padding: 8px 12px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #444;
+  border-bottom: 1px solid #1e1e1e;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#lineHint { font-size: 10px; color: #3b82f6; letter-spacing: 0; text-transform: none; }
+
+.code-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+.code-scroll::-webkit-scrollbar { width: 4px; height: 4px; }
+.code-scroll::-webkit-scrollbar-track { background: transparent; }
+.code-scroll::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+pre { margin: 0 !important; border-radius: 0 !important; }
+.hljs { background: #0d0d0d !important; font-size: 11px !important; line-height: 1.65 !important; padding: 12px 14px !important; }
+.hl-line {
+  display: block;
+  background: #1a2d4a;
+  margin: 0 -14px;
+  padding: 0 14px;
+  border-left: 2px solid #3b82f6;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="logo">MeshScript</span>
+  <span class="divider"></span>
+  <span id="scriptName">—</span>
+  <span class="kbd">
+    <kbd>&#8592;</kbd> <kbd>&#8594;</kbd> step through
+  </span>
+  <button onclick="toggleCode()" id="codeToggle" style="margin-left:8px; background:#1e1e1e; border:1px solid #333; color:#888; padding:3px 10px; border-radius:4px; cursor:pointer; font-size:11px;">script</button>
+</header>
+
+<div class="main">
+
+  <div class="sidebar">
+    <div class="sidebar-header">Build Steps</div>
+    <div class="steps" id="stepList"></div>
+  </div>
+
+  <div class="viewer-col">
+    <model-viewer
+      id="viewer"
+      camera-controls
+      auto-rotate
+      auto-rotate-delay="3000"
+      shadow-intensity="0.6"
+      environment-image="neutral"
+      tone-mapping="neutral">
+    </model-viewer>
+
+    <div class="bottom-bar">
+      <button class="nav-btn" id="btnPrev" onclick="step(-1)">&#8592; Prev</button>
+      <span class="step-counter" id="counter"></span>
+      <button class="nav-btn" id="btnNext" onclick="step(1)">Next &#8594;</button>
+      <div class="stats-row">
+        <div class="stat-item">Verts <span id="statVerts">—</span></div>
+        <div class="stat-item">Faces <span id="statFaces">—</span></div>
+        <div class="stat-item">Vol <span id="statVol">—</span></div>
+        <div class="stat-item" id="statWater"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="code-panel">
+    <div class="code-header">
+      <span>Script</span>
+      <span id="lineHint"></span>
+    </div>
+    <div class="code-scroll" id="codeScroll">
+      <pre><code class="language-python" id="codeBlock"></code></pre>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let data = null;
+let current = 0;
+let rawLines = [];
+
+async function init() {
+  // Prefer inline data injected by run.py (works on file://).
+  // Fall back to fetch for server-hosted use.
+  if (window.__CHECKPOINTS__) {
+    data = window.__CHECKPOINTS__;
+  } else {
+    const res = await fetch('checkpoints.json');
+    data = await res.json();
+  }
+  document.getElementById('scriptName').textContent = data.name || '';
+
+  // Split script into lines for per-line highlighting
+  rawLines = (data.script || '').split('\n');
+
+  // Render sidebar
+  const list = document.getElementById('stepList');
+  data.checkpoints.forEach((cp, i) => {
+    const el = document.createElement('div');
+    el.className = 'step-item';
+    el.id = `step-${i}`;
+    const wBadge = cp.watertight
+      ? `<span class="badge badge-ok">watertight</span>`
+      : `<span class="badge badge-warn">open mesh</span>`;
+    const volStr = cp.volume != null
+      ? `<span class="badge badge-stat">vol ${cp.volume.toFixed(2)}</span>` : '';
+    el.innerHTML = `
+      <div class="step-num">Step ${i + 1}</div>
+      <div class="step-label">${cp.label}</div>
+      <div class="step-meta">
+        ${wBadge}
+        <span class="badge badge-stat">${cp.vertices.toLocaleString()} v</span>
+        <span class="badge badge-stat">${cp.faces.toLocaleString()} f</span>
+        ${volStr}
+      </div>`;
+    el.onclick = () => goTo(i);
+    list.appendChild(el);
+  });
+
+  goTo(0);
+}
+
+function renderCode(activeLine) {
+  // Highlight syntax then overlay the active line
+  const code = document.getElementById('codeBlock');
+
+  // Build highlighted HTML line by line
+  const highlighted = rawLines.map((line, i) => {
+    const safe = line.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    // Use hljs on each line for simplicity
+    const hl = hljs.highlight(safe, { language: 'python', ignoreIllegals: true }).value;
+    if (activeLine && i === activeLine - 1) {
+      return `<span class="hl-line">${hl}</span>`;
+    }
+    return hl;
+  }).join('\n');
+
+  code.innerHTML = highlighted;
+
+  // Scroll active line into view (centre it)
+  if (activeLine) {
+    const scroll = document.getElementById('codeScroll');
+    const lineH = 18.15; // 11px * 1.65
+    const target = (activeLine - 1) * lineH - scroll.clientHeight / 2 + lineH / 2;
+    scroll.scrollTop = Math.max(0, target);
+    document.getElementById('lineHint').textContent = `line ${activeLine}`;
+  } else {
+    document.getElementById('lineHint').textContent = '';
+  }
+}
+
+function goTo(i) {
+  current = i;
+  const cp = data.checkpoints[i];
+
+  // Load mesh — prefer inline data URL (works on file://), fall back to path for server use.
+  document.getElementById('viewer').src = cp.data_url || cp.file;
+
+  // Sidebar highlight
+  document.querySelectorAll('.step-item').forEach((el, j) => {
+    el.classList.toggle('active', j === i);
+  });
+  document.getElementById(`step-${i}`).scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+  // Bottom bar
+  document.getElementById('counter').textContent = `${i + 1} / ${data.checkpoints.length}`;
+  document.getElementById('statVerts').textContent = cp.vertices.toLocaleString();
+  document.getElementById('statFaces').textContent = cp.faces.toLocaleString();
+  document.getElementById('statVol').textContent = cp.volume != null ? cp.volume.toFixed(3) : '—';
+  document.getElementById('statWater').innerHTML = cp.watertight
+    ? '<span style="color:#4ade80">&#10003; watertight</span>'
+    : '<span style="color:#fb923c">&#9651; open mesh</span>';
+  document.getElementById('btnPrev').disabled = i === 0;
+  document.getElementById('btnNext').disabled = i === data.checkpoints.length - 1;
+
+  // Code panel
+  renderCode(cp.line);
+}
+
+function step(dir) {
+  const next = current + dir;
+  if (next >= 0 && next < data.checkpoints.length) goTo(next);
+}
+
+function toggleCode() {
+  const panel = document.querySelector('.code-panel');
+  const btn = document.getElementById('codeToggle');
+  panel.classList.toggle('collapsed');
+  btn.style.color = panel.classList.contains('collapsed') ? '#555' : '#888';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); step(1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); step(-1); }
+});
+
+init();
+</script>
+</body>
+</html>
