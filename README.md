@@ -36,3 +36,24 @@ composing shapes, text, and loaded images via `canvas_ops`. See
 `examples/canvas/` for sample `.cnv` scripts. ComfyUI nodes
 (`CanvasScriptExecute`, `SaveCanvasWithScript`, `LoadCanvasWithScript`) live in
 `D:\ComfyUI-MeshScript\nodes_canvas.py`.
+
+## Structured-output IR
+
+Both domains also support a schema-constrained JSON IR (`ir/`) — the LLM
+emits a sequence of typed op-call "steps" instead of free-form code, decoded
+under a JSON Schema via `lm-format-enforcer`, semantically validated, then
+compiled to `.ms`/`.cnv` source. See `prompt/mesh-ir-prompt.md` and
+`prompt/canvas-ir-prompt.md`. ComfyUI nodes (`MeshScriptLLMGenIR`,
+`CanvasScriptLLMGenIR`) live in `D:\ComfyUI-MeshScript\nodes_ir.py`.
+
+## Status
+
+The full pipeline (LLM → MeshScript → mesh → GLB) is deployed end-to-end on
+Graydient as `meshscript-txt2mesh` and `meshscript-mesh2mesh` (gen scripts in
+`D:\tripostl\`). It renders successfully, but **translation quality is the
+current focus** — the LLM is producing oversimplified scripts (single
+primitive, single `show()`) that ignore most of the spec. See `CLAUDE.md` for
+the active debugging plan and `ROADMAP.md` for the longer-term phase plan
+(critique loop / designer agent, Phases 3-4, are the structural fix for this
+class of issue). The structured-output IR (above) is the first concrete step
+toward addressing this.
