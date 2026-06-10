@@ -88,9 +88,9 @@ _FLOAT_LIST_SCHEMA = {
 }
 
 
-def _param_schema(p: ParamSpec) -> dict:
+def _param_schema(p: ParamSpec, has_float_refs: bool) -> dict:
     if p.type == IRType.FLOAT:
-        return _FLOAT_SCHEMA
+        return _FLOAT_SCHEMA if has_float_refs else {"type": "number"}
     if p.type in (IRType.MESH_LIST, IRType.PROFILE_LIST):
         return _REF_LIST_SCHEMA
     if p.type == IRType.FLOAT_LIST:
@@ -116,11 +116,11 @@ def _param_schema(p: ParamSpec) -> dict:
     raise ValueError(f"unhandled IRType: {p.type!r}")
 
 
-def _op_schema(spec: OpSpec) -> dict:
+def _op_schema(spec: OpSpec, has_float_refs: bool) -> dict:
     props = {}
     required = []
     for p in spec.params:
-        props[p.name] = _param_schema(p)
+        props[p.name] = _param_schema(p, has_float_refs)
         if p.required:
             required.append(p.name)
 
@@ -142,13 +142,23 @@ def _op_schema(spec: OpSpec) -> dict:
 
 
 def build_schema(specs: list) -> dict:
-    """Build the top-level `{"steps": [...]}` JSON Schema for a list of OpSpec."""
+    """Build the top-level `{"steps": [...]}` JSON Schema for a list of OpSpec.
+
+    FLOAT params are allowed to be `{"$ref": "<var>"}` (referencing an
+    earlier step's numeric output, e.g. `top(mesh)`) only if this domain's
+    spec registry actually contains FLOAT-returning ops (MeshScript). For
+    domains without any FLOAT-returning ops (CanvasScript), FLOAT params are
+    constrained to a plain JSON number — this avoids an `oneOf` between two
+    object-shaped schemas, which lm-format-enforcer's constrained decoding
+    does not enforce reliably.
+    """
+    has_float_refs = any(s.returns == IRType.FLOAT for s in specs)
     return {
         "type": "object",
         "properties": {
             "steps": {
                 "type": "array",
-                "items": {"oneOf": [_op_schema(s) for s in specs]},
+                "items": {"oneOf": [_op_schema(s, has_float_refs) for s in specs]},
                 "minItems": 1,
             }
         },
