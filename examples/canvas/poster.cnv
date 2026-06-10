@@ -1,0 +1,27 @@
+# poster.cnv — gradient background + title/subtitle, demonstrates align()
+
+doc = new_document(1024, 1280, background=(20, 20, 30, 255))
+
+bg = gradient(1024, 1280, [(0, (25, 10, 60, 255)), (1, (120, 30, 90, 255))], direction="vertical")
+doc = place(doc, bg, 0, 0)
+
+title = text("MIDNIGHT\nRUN", size=110, color=(255, 255, 255, 255), align="center", line_spacing=1.0)
+doc = align(doc, title, "top", margin=140)
+
+subtitle = text(
+    "A procedural poster, rendered by CanvasScript - every pixel of this text "
+    "is exact, no matter how many times you run it.",
+    size=34, color=(230, 220, 240, 255), align="center", max_width=760,
+)
+doc = align(doc, subtitle, "bottom", margin=140)
+
+badge = ellipse(180, 180, fill=(255, 200, 60, 255))
+badge_label = text("NEW", size=44, color=(40, 20, 0, 255), align="center")
+doc = align(doc, badge, "top-right", margin=60)
+
+# place the label centered on top of the badge
+bx = doc_size(doc)[0] - 60 - 90
+by = 60 + 90
+doc = place(doc, badge_label, bx, by, anchor="center")
+
+show(doc, "poster")

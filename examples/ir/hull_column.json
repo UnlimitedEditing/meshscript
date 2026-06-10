@@ -1,0 +1,18 @@
+{
+  "steps": [
+    {"var": "base_profile", "op": "ngon_profile", "args": {"n": 6, "r": 1.0}},
+    {"var": "top_profile", "op": "ngon_profile", "args": {"n": 6, "r": 0.4}},
+    {"var": "column", "op": "loft", "args": {"profiles": [{"$ref": "base_profile"}, {"$ref": "top_profile"}], "heights": [0, 3], "cap": true}},
+    {"var": "_", "op": "show", "args": {"mesh": {"$ref": "column"}, "label": "column"}},
+    {"var": "column_top", "op": "top", "args": {"mesh": {"$ref": "column"}}},
+
+    {"var": "elbow_path", "op": "arc_path", "args": {"r": 1.5, "angle": 90, "plane": "xz"}},
+    {"var": "elbow", "op": "pipe", "args": {"path": {"$ref": "elbow_path"}, "r": 0.2, "segments": 16}},
+    {"var": "elbow", "op": "translate", "args": {"mesh": {"$ref": "elbow"}, "z": {"$ref": "column_top"}}},
+    {"var": "_", "op": "show", "args": {"mesh": {"$ref": "elbow"}, "label": "elbow"}},
+
+    {"var": "wrap", "op": "convex_hull", "args": {"meshes": [{"$ref": "column"}, {"$ref": "elbow"}]}},
+    {"var": "wrap", "op": "ground", "args": {"mesh": {"$ref": "wrap"}}},
+    {"var": "_", "op": "show", "args": {"mesh": {"$ref": "wrap"}, "label": "wrap"}}
+  ]
+}

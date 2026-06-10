@@ -1,0 +1,18 @@
+# photo_caption.cnv — load an image and overlay a caption with a drop shadow.
+# This is the "add overlays to existing images" use case: take a diffusion
+# output (or any photo/render) and add perfectly-rendered text on top.
+
+photo = load_image("https://picsum.photos/seed/canvasscript/1024/768", w=1024, h=768, fit="cover")
+
+doc = new_document(1024, 768)
+doc = place(doc, photo, 0, 0)
+
+# Darken the lower third so the caption stays legible over busy photos.
+shade = gradient(1024, 260, [(0, (0, 0, 0, 0)), (1, (0, 0, 0, 180))], direction="vertical")
+doc = place(doc, shade, 0, 768 - 260)
+
+caption = text("Lake Hollow, dawn", size=56, color=(255, 255, 255, 255))
+caption = drop_shadow(caption, offset=(2, 2), blur_radius=4, color=(0, 0, 0, 200))
+doc = align(doc, caption, "bottom-left", margin=40)
+
+show(doc, "photo_caption")

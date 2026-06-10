@@ -1,0 +1,13 @@
+{
+  "steps": [
+    {"var": "photo", "op": "load_image", "args": {"url_or_path": "https://picsum.photos/seed/canvasscript/1024/768", "w": 1024, "h": 768, "fit": "cover"}},
+    {"var": "doc", "op": "new_document", "args": {"width": 1024, "height": 768}},
+    {"var": "doc", "op": "place", "args": {"doc": {"$ref": "doc"}, "layer": {"$ref": "photo"}, "x": 0, "y": 0}},
+    {"var": "shade", "op": "gradient", "args": {"w": 1024, "h": 260, "stops": [{"pos": 0, "color": [0, 0, 0, 0]}, {"pos": 1, "color": [0, 0, 0, 180]}], "direction": "vertical"}},
+    {"var": "doc", "op": "place", "args": {"doc": {"$ref": "doc"}, "layer": {"$ref": "shade"}, "x": 0, "y": 508}},
+    {"var": "caption", "op": "text", "args": {"content": "Lake Hollow, dawn", "size": 56, "color": [255, 255, 255, 255]}},
+    {"var": "caption", "op": "drop_shadow", "args": {"layer": {"$ref": "caption"}, "offset": [2, 2], "blur_radius": 4, "color": [0, 0, 0, 200]}},
+    {"var": "doc", "op": "align", "args": {"doc": {"$ref": "doc"}, "layer": {"$ref": "caption"}, "anchor": "bottom-left", "margin": 40}},
+    {"var": "_", "op": "show", "args": {"doc": {"$ref": "doc"}, "label": "photo_caption"}}
+  ]
+}
