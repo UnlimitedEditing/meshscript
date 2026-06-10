@@ -41,7 +41,7 @@ composing shapes, text, and loaded images via `canvas_ops`. See
 
 Both domains also support a schema-constrained JSON IR (`ir/`) — the LLM
 emits a sequence of typed op-call "steps" instead of free-form code, decoded
-under a JSON Schema via `lm-format-enforcer`, semantically validated, then
+under a JSON Schema via `xgrammar`, semantically validated, then
 compiled to `.ms`/`.cnv` source. See `prompt/mesh-ir-prompt.md` and
 `prompt/canvas-ir-prompt.md`. ComfyUI nodes (`MeshScriptLLMGenIR`,
 `CanvasScriptLLMGenIR`) live in `D:\ComfyUI-MeshScript\nodes_ir.py`.

@@ -14,8 +14,8 @@ constrains `args` to exactly that op's parameters. Object-reference params
 (Document/Layer/Mesh/...) must be `{"$ref": "<var>"}`; everything else is a
 JSON literal.
 
-This schema is fed to `lmformatenforcer.JsonSchemaParser` to constrain
-`transformers.generate` token-by-token.
+This schema is compiled by `xgrammar.GrammarCompiler.compile_json_schema` to
+constrain `transformers.generate` token-by-token.
 """
 
 from __future__ import annotations
@@ -149,8 +149,8 @@ def build_schema(specs: list) -> dict:
     spec registry actually contains FLOAT-returning ops (MeshScript). For
     domains without any FLOAT-returning ops (CanvasScript), FLOAT params are
     constrained to a plain JSON number — this avoids an `oneOf` between two
-    object-shaped schemas, which lm-format-enforcer's constrained decoding
-    does not enforce reliably.
+    object-shaped schemas, which constrained decoding does not enforce
+    reliably.
     """
     has_float_refs = any(s.returns == IRType.FLOAT for s in specs)
     return {
